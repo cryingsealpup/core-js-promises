@@ -40,9 +40,14 @@ function getPromise(number) {
  * Promise.reject('fail')     => promise that will be fulfilled with 'fail' value
  */
 function getPromiseResult(source) {
-  return new Promise((resolve, reject) => {
-    resolve(source.resolve());
-    reject();
+  return new Promise((resolve) => {
+    source
+      .then(() => {
+        resolve('success');
+      })
+      .catch(() => {
+        resolve('fail');
+      });
   });
 }
 
@@ -114,7 +119,17 @@ function getAllOrNothing(promises) {
  * [Promise.resolve(1), Promise.reject(2), Promise.resolve(3)]  => Promise fulfilled with [1, null, 3]
  */
 function getAllResult(promises) {
-  return Promise.allSettled(promises);
+  return Promise.all(
+    promises.map((promise) => {
+      return promise
+        .then((response) => {
+          return response;
+        })
+        .catch(() => {
+          return null;
+        });
+    })
+  );
 }
 
 /**
@@ -135,8 +150,10 @@ function getAllResult(promises) {
  * [promise1, promise4, promise3] => Promise.resolved('104030')
  * [promise1, promise4, promise3, promise2] => Promise.resolved('10403020')
  */
-function queuPromises(/* promises */) {
-  throw new Error('Not implemented');
+function queuPromises(promises) {
+  return promises.reduce((acc, curr) => {
+    return acc.then((data) => curr.then((resolveData) => data + resolveData));
+  }, Promise.resolve(''));
 }
 
 module.exports = {
